@@ -1,65 +1,83 @@
-# [Start Bootstrap - SB Admin 2](https://startbootstrap.com/theme/sb-admin-2/)
+# Gym Web Application — AWS Cloud Migration
 
-[SB Admin 2](https://startbootstrap.com/theme/sb-admin-2/) is an open source admin dashboard theme for [Bootstrap](https://getbootstrap.com/) created by [Start Bootstrap](https://startbootstrap.com/).
+A PHP-based gym management web application migrated from a local XAMPP 
+environment to AWS cloud infrastructure.
 
-For the legacy Bootstrap 3 version of this theme, you can view the [last stable release](https://github.com/StartBootstrap/startbootstrap-sb-admin-2/releases/tag/v3.3.7%2B1) of SB Admin 2 for Bootstrap 3.
+## Architecture
 
-## Preview
+![Architecture Diagram](screenshots/architecture.png)
 
-[![SB Admin 2 Preview](https://assets.startbootstrap.com/img/screenshots/themes/sb-admin-2.png)](https://startbootstrap.github.io/startbootstrap-sb-admin-2/)
+## What Was Migrated
 
-**[Launch Live Preview](https://startbootstrap.github.io/startbootstrap-sb-admin-2/)**
+This project was originally running locally using XAMPP with:
+- Apache as the web server
+- MySQL as the database
+- Everything hosted on a single local machine
 
-## Status
+It was migrated to AWS using a lift-and-shift approach, replacing each 
+local component with a managed AWS service.
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/StartBootstrap/startbootstrap-sb-admin-2/master/LICENSE)
-[![npm version](https://img.shields.io/npm/v/startbootstrap-sb-admin-2.svg)](https://www.npmjs.com/package/startbootstrap-sb-admin-2)
-[![Build Status](https://travis-ci.org/StartBootstrap/startbootstrap-sb-admin-2.svg?branch=master)](https://travis-ci.org/StartBootstrap/startbootstrap-sb-admin-2)
-[![dependencies Status](https://david-dm.org/StartBootstrap/startbootstrap-sb-admin-2/status.svg)](https://david-dm.org/StartBootstrap/startbootstrap-sb-admin-2)
-[![devDependencies Status](https://david-dm.org/StartBootstrap/startbootstrap-sb-admin-2/dev-status.svg)](https://david-dm.org/StartBootstrap/startbootstrap-sb-admin-2?type=dev)
+| Local (XAMPP) | AWS Cloud |
+|---|---|
+| Apache on localhost | Apache on EC2 (Amazon Linux 2023) |
+| MySQL on localhost | Amazon RDS (MySQL) |
+| Local machine | EC2 t2.micro instance |
 
-## Download and Installation
+## AWS Services Used
 
-To begin using this template, choose one of the following options to get started:
+- **EC2** — hosts the Apache web server and PHP application
+- **RDS (MySQL)** — managed cloud database replacing local MySQL
+- **Security Groups** — controls inbound traffic on ports 80 (HTTP) and 22 (SSH)
+- **IAM** — access management for AWS resources
+- **AWS Budgets** — billing alarm to monitor and control costs
 
-* [Download the latest release on Start Bootstrap](https://startbootstrap.com/theme/sb-admin-2/)
-* Install via npm: `npm i startbootstrap-sb-admin-2`
-* Clone the repo: `git clone https://github.com/StartBootstrap/startbootstrap-sb-admin-2.git`
-* [Fork, Clone, or Download on GitHub](https://github.com/StartBootstrap/startbootstrap-sb-admin-2)
+## How It Works
 
-## Usage
+1. User visits the EC2 public IP in their browser
+2. Apache on EC2 serves the PHP application
+3. PHP connects to RDS MySQL via PDO using the RDS endpoint
+4. RDS returns data and the app renders it to the user
 
-After installation, run `npm install` and then run `npm start` which will open up a preview of the template in your default browser, watch for changes to core template files, and live reload the browser when changes are saved. You can view the `gulpfile.js` to see which tasks are included with the dev environment.
+## Setup & Deployment
 
-### Gulp Tasks
+### Prerequisites
+- AWS account with free tier
+- EC2 key pair (.pem file)
+- PHP 8+ and MySQL 5.7+
 
-* `gulp` the default task that builds everything
-* `gulp watch` browserSync opens the project in your default browser and live reloads when changes are made
-* `gulp css` compiles SCSS files into CSS and minifies the compiled CSS
-* `gulp js` minifies the themes JS file
-* `gulp vendor` copies dependencies from node_modules to the vendor directory
+### Steps
+1. Launch EC2 t2.micro instance (Amazon Linux 2023)
+2. Install Apache and PHP:
+sudo dnf install httpd php php-mysqlnd -y
+sudo systemctl start httpd
+sudo systemctl enable httpd
+3. Clone this repo to `/var/www/html/` on EC2:
+cd /var/www/html
+sudo git clone https://github.com/vurbinav/gym-app-aws.git
+4. Create RDS MySQL instance (db.t3.micro — free tier)
+5. Import database:
+mysql -h YOUR-RDS-ENDPOINT -u admin -p gym_db < database/gym_db.sql
+6. Create `config.php` on the server (never commit this file):
+```php
+   <?php
+   $host = 'YOUR-RDS-ENDPOINT';
+   $dbname = 'gym_db';
+   $username = 'admin';
+   $password = 'YOUR-PASSWORD';
+   $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+```
 
-You must have npm installed globally in order to use this build environment. This theme was built using node v11.6.0 and the Gulp CLI v2.0.1. If Gulp is not running properly after running `npm install`, you may need to update node and/or the Gulp CLI locally.
+## Security
 
-## Bugs and Issues
+- `config.php` is excluded from version control via `.gitignore`
+- EC2 SSH access restricted to specific IP only
+- RDS instance not publicly accessible from outside VPC
+- Security groups follow least-privilege
 
-Have a bug or an issue with this template? [Open a new issue](https://github.com/StartBootstrap/startbootstrap-sb-admin-2/issues) here on GitHub or leave a comment on the [template overview page at Start Bootstrap](https://startbootstrap.com/theme/sb-admin-2/).
+## Screenshots
 
-## About
-
-Start Bootstrap is an open source library of free Bootstrap templates and themes. All of the free templates and themes on Start Bootstrap are released under the MIT license, which means you can use them for any purpose, even for commercial projects.
-
-* <https://startbootstrap.com>
-* <https://twitter.com/SBootstrap>
-
-Start Bootstrap was created by and is maintained by **[David Miller](https://davidmiller.io/)**.
-
-* <https://davidmiller.io>
-* <https://twitter.com/davidmillerhere>
-* <https://github.com/davidtmiller>
-
-Start Bootstrap is based on the [Bootstrap](https://getbootstrap.com/) framework created by [Mark Otto](https://twitter.com/mdo) and [Jacob Thorton](https://twitter.com/fat).
-
-## Copyright and License
-
-Copyright 2013-2021 Start Bootstrap LLC. Code released under the [MIT](https://github.com/StartBootstrap/startbootstrap-resume/blob/master/LICENSE) license.
+![Gym App Running](screenshots/app.png)
+![EC2 Instance](screenshots/ec2.png)
+![RDS Instance](screenshots/rds.png)
+![Security Groups](screenshots/security-groups.png)
+![Billing Alarm](screenshots/billing.png)
