@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login y Registration</title>
+    <title>Login & Registration</title>
     <link rel="stylesheet" href="css/sb-admin-2.min.css">
 </head>
 <body>
